@@ -19,6 +19,18 @@ export async function chatCompletion(
   temperature: number = 0.7,
   maxTokens: number = 4096
 ): Promise<string> {
+  // 为不同模型优化参数
+  let finalTemperature = temperature;
+  let finalMaxTokens = maxTokens;
+
+  // Gemini 模型特殊处理
+  if (config.provider === 'gemini' || config.modelId.includes('gemini')) {
+    // Gemini 对 temperature 范围要求是 0-2
+    finalTemperature = Math.min(temperature, 2);
+    // Gemini 默认支持较大的 max_tokens
+    finalMaxTokens = Math.min(maxTokens, 8192);
+  }
+
   const response = await fetch(config.baseUrl, {
     method: 'POST',
     headers: {
@@ -28,20 +40,38 @@ export async function chatCompletion(
     body: JSON.stringify({
       model: config.modelId,
       messages,
-      temperature,
-      max_tokens: maxTokens,
+      temperature: finalTemperature,
+      max_tokens: finalMaxTokens,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`API 请求失败 (${response.status}): ${errorText}`);
+    let errorMessage = `API 请求失败 (${response.status})`;
+
+    // 尝试解析错误信息
+    try {
+      const errorData = JSON.parse(errorText);
+      if (errorData.error?.message) {
+        errorMessage = errorData.error.message;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      errorMessage += `: ${errorText}`;
+    }
+
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content;
 
   if (!content) {
+    // 检查是否有其他格式的问题
+    if (data.error) {
+      throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+    }
     throw new Error('API 返回内容为空');
   }
 

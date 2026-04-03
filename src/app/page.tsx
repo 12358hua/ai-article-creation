@@ -25,17 +25,24 @@ import {
   ChevronDown,
   Palette,
   Hash,
+  History,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import ModelConfigDialog from '@/components/model-config-dialog'
 import OutlineCard, { type OutlineData } from '@/components/outline-card'
 import ArticleViewer from '@/components/article-viewer'
+import HistoryListDialog from '@/components/history-list-dialog'
 import {
   type ModelConfig,
   loadModels,
   loadActiveModelId,
   saveActiveModelId,
 } from '@/lib/model-store'
+import {
+  loadHistory,
+  saveHistory,
+  addHistoryItem,
+} from '@/lib/history-store'
 
 // ── 风格选项 ──
 const STYLE_OPTIONS = [
@@ -66,6 +73,10 @@ export default function Home() {
   const [models, setModels] = useState<ModelConfig[]>([])
   const [activeModelId, setActiveModelId] = useState<string>('')
   const [configDialogOpen, setConfigDialogOpen] = useState(false)
+
+  // 历史记录
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyTopic, setHistoryTopic] = useState<string>('')
 
   // 应用状态
   const [topic, setTopic] = useState('')
@@ -196,6 +207,23 @@ export default function Home() {
       setArticleStyle(data.style)
       setArticleWordCount(data.wordCount)
       toast.success(`文章生成完成，共 ${data.wordCount} 字`)
+
+      // 保存到历史记录
+      const currentHistory = loadHistory()
+      const updatedHistory = addHistoryItem(currentHistory, {
+        title: data.title,
+        content: data.article,
+        style: data.style,
+        wordCount: data.wordCount,
+        topic: topic.trim(),
+        outline: {
+          style: outline.style,
+          title: outline.title,
+          summary: outline.summary,
+          sections: outline.sections,
+        },
+      })
+      saveHistory(updatedHistory)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '生成文章失败'
       toast.error(message)
@@ -234,7 +262,7 @@ export default function Home() {
               <PenLine className="size-4 text-primary" />
             </div>
             <div>
-              <h1 className="font-bold leading-none">文章创作助手</h1>
+              <h1 className="font-bold leading-none">公众号文章创作助手</h1>
               <p className="text-sm text-muted-foreground mt-0.5">AI 驱动的一站式创作工具</p>
             </div>
           </div>
@@ -267,6 +295,16 @@ export default function Home() {
                 ))}
               </SelectContent>
             </Select>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-8"
+              onClick={() => setHistoryOpen(true)}
+              title="历史记录"
+            >
+              <History className="size-4" />
+            </Button>
 
             <Button
               variant="outline"
@@ -584,6 +622,12 @@ export default function Home() {
         activeModelId={activeModelId}
         onSelectModel={handleSelectModel}
         onRefresh={fetchModels}
+      />
+
+      {/* 历史记录弹窗 */}
+      <HistoryListDialog
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
       />
     </div>
   )
