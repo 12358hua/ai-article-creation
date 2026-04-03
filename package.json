@@ -1,7 +1,7 @@
 {
-  "name": "nextjs_tailwind_shadcn_ts",
+  "name": "ai-article-creation",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
