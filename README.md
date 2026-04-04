@@ -16,6 +16,23 @@
 - **字数控制**：支持 500~3000 字任意范围
 - **一键生成**：选择大纲后自动生成完整文章
 
+### 📝 界面展示
+
+<table>
+  <tr>
+    <td><img src="image/image-01.png" alt="界面截图 1" width="100%"></td>
+    <td><img src="image/image-02.png" alt="界面截图 2" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="image/image-03.png" alt="界面截图 3" width="100%"></td>
+    <td><img src="image/image-04.png" alt="界面截图 4" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="image/image-05.png" alt="界面截图 5" width="100%"></td>
+    <td><img src="image/image-06.png" alt="界面截图 6" width="100%"></td>
+  </tr>
+</table>
+
 ### 🤖 多模型支持
 支持市面上主流的大语言模型，所有模型均通过 OpenAI 兼容接口调用：
 
